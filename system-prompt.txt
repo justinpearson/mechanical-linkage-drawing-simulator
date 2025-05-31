@@ -1,0 +1,17 @@
+<PASTE THIS PREAMBLE INTO EACH NEW CHAT WITH AN AI CODING AGENT>
+
+Thank you for contributing to this software project. Before we start, please read the following docs to familiarize yourself with the project:
+
+- README.md -- purpose of the project
+- CONTRIBUTING.md -- conventions to follow when developing code in this project
+
+Thank you!
+
+I am about to give you a coding task that you should implement. HOWEVER, as mentioned in CONTRIBUTING.md, before you implement it, please first copy my prompt into a file in the `prompts/` directory. This is for auditing purposes. The filename should have the form `YYYY-MM-DD-HH-MM-SS_BRANCH_NAME.txt`, where `BRANCH_NAME` is the name of the git branch you'll create for this task / feature. Add this prompt file in your first commit on this new branch. For example, if the coding task is "Please add multi-select functionality to the app, with behavior as follows ...", then you should create the text file `prompts/2025-05-31-15-43-11_addMultiSelect.txt` with the content "Please add multi-select functionality to the app, with behavior as follows ...", copied EXACTLY. Then create and checkout the git branch `addMultiSelect`. Then add and commit the file `prompts/2025-05-31-15-43-11_addMultiSelect.txt` to that git branch. THEN you can proceed to implement your coding solution.
+
+Does this make sense? If so, I will proceed to give you a coding task.
+
+--------------------------------
+BEGIN: STATEMENT OF TASK
+--------------------------------
+

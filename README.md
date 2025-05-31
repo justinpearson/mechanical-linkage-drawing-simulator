@@ -1,58 +1,23 @@
-# mechanical-linkage-drawing-simulator
-Create and simulate mechanical linkage drawing systems, eg, spirograph / intaglio
+# Mechanical linkage drawing simulator
 
+This is a web app for generating drawings via mechanical linkage systems, like the "Spirograph" children's toy, or fancy scrollwork on currency ("intaglio").
 
-# React + TypeScript + Vite
+A mechanical linkage is basically a collection of rotating wheels and rods that are attached to each other in some way. In this app, the user can create wheels and rods, connect them together, and play an animation that simulates the wheels turning and the linkage arms moving around. It is basically a 2D, lightweight, heavily constrained physics simulator.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Key elements:
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+- Main canvas, displays wheels & rods
+- Toolbar with tools:
+    - "Wheel" tool: add a new wheel where the user clicks.
+        - wheels need a picture / texture / gradient, so you can tell when they're rotating. Pick whatever's simplest to implement.
+    - "Rod" tool: user drags to define a new rod. Basically a line with a little thickness.
+    - "Pivot" tool: user clicks on overlapping elements to connect them so that they remain fixed at the pivot. (But they can still rotate around the pivot.)
+- User can drag elements around on the canvas.
+    - Drag the end of a rod to make it longer
+    - Drag the middle of a rod to reposition it
+    - Drag a wheel's center to reposition it
+    - Drag a wheel's edge to change its radius
+- Time controls:
+    - "Timeline" indicator: a horizontal line shows time, with t=0 in the middle, and there's a little playhead icon to show the current time.
+        - Can drag the playhead, similar to "scrubbing" in a video editor. Causes the simulation to play forward / backward to the playhead's indicated time.
+    - "Play / pause": runs the simulation, rotating each wheel at a rate of 1 revolution per second.
