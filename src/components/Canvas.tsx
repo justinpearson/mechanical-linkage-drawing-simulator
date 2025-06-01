@@ -1,6 +1,5 @@
-import { Stage, Layer, Circle, Line, Group } from 'react-konva';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Tool, Wheel, Rod, Pivot, Point } from './types';
-import { useCallback, useState } from 'react';
 
 interface CanvasProps {
   selectedTool: Tool;
@@ -21,109 +20,141 @@ export const Canvas = ({
   onAddRod,
   onAddPivot,
 }: CanvasProps) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPoint, setStartPoint] = useState<Point | null>(null);
+  const [currentPoint, setCurrentPoint] = useState<Point | null>(null);
 
-  const handleMouseDown = useCallback((e: any) => {
-    const stage = e.target.getStage();
-    const point = stage.getPointerPosition();
+  // Draw everything on the canvas
+  const draw = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Set default styles
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 2;
+    ctx.fillStyle = 'black';
+
+    // Draw wheels
+    wheels.forEach(wheel => {
+      ctx.beginPath();
+      ctx.arc(wheel.center.x, wheel.center.y, wheel.radius, 0, Math.PI * 2);
+      ctx.stroke();
+    });
+
+    // Draw rods
+    rods.forEach(rod => {
+      ctx.beginPath();
+      ctx.moveTo(rod.start.x, rod.start.y);
+      ctx.lineTo(rod.end.x, rod.end.y);
+      ctx.stroke();
+    });
+
+    // Draw pivots
+    pivots.forEach(pivot => {
+      ctx.beginPath();
+      ctx.arc(pivot.position.x, pivot.position.y, 5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // Draw preview for rod being drawn
+    if (isDrawing && startPoint && currentPoint) {
+      ctx.strokeStyle = 'gray';
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(startPoint.x, startPoint.y);
+      ctx.lineTo(currentPoint.x, currentPoint.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }, [wheels, rods, pivots, isDrawing, startPoint, currentPoint]);
+
+  // Update canvas size on window resize
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      draw();
+    };
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    return () => window.removeEventListener('resize', resizeCanvas);
+  }, [draw]);
+
+  // Redraw when elements change
+  useEffect(() => {
+    draw();
+  }, [draw]);
+
+  const getCanvasPoint = (e: React.MouseEvent<HTMLCanvasElement>): Point => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+  };
+
+  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    const point = getCanvasPoint(e);
     
     if (selectedTool === 'wheel') {
       onAddWheel({
         id: `wheel-${Date.now()}`,
-        center: { x: point.x, y: point.y },
+        center: point,
         radius: 30, // Default radius
       });
     } else if (selectedTool === 'rod') {
       setIsDrawing(true);
-      setStartPoint({ x: point.x, y: point.y });
+      setStartPoint(point);
+      setCurrentPoint(point);
     } else if (selectedTool === 'pivot') {
       onAddPivot({
         id: `pivot-${Date.now()}`,
-        position: { x: point.x, y: point.y },
+        position: point,
       });
     }
   }, [selectedTool, onAddWheel, onAddRod, onAddPivot]);
 
-  const handleMouseMove = useCallback((e: any) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing || !startPoint || selectedTool !== 'rod') return;
-
-    const stage = e.target.getStage();
-    const point = stage.getPointerPosition();
-    
-    // Update the preview of the rod being drawn
-    // This will be handled by the parent component
+    setCurrentPoint(getCanvasPoint(e));
   }, [isDrawing, startPoint, selectedTool]);
 
-  const handleMouseUp = useCallback((e: any) => {
+  const handleMouseUp = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing || !startPoint || selectedTool !== 'rod') return;
 
-    const stage = e.target.getStage();
-    const point = stage.getPointerPosition();
-    
+    const endPoint = getCanvasPoint(e);
     onAddRod({
       id: `rod-${Date.now()}`,
       start: startPoint,
-      end: { x: point.x, y: point.y },
+      end: endPoint,
     });
 
     setIsDrawing(false);
     setStartPoint(null);
+    setCurrentPoint(null);
   }, [isDrawing, startPoint, selectedTool, onAddRod]);
 
   return (
-    <Stage
-      width={window.innerWidth}
-      height={window.innerHeight}
+    <canvas
+      ref={canvasRef}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
-    >
-      <Layer>
-        {/* Draw wheels */}
-        {wheels.map(wheel => (
-          <Circle
-            key={wheel.id}
-            x={wheel.center.x}
-            y={wheel.center.y}
-            radius={wheel.radius}
-            stroke="black"
-            strokeWidth={2}
-          />
-        ))}
-
-        {/* Draw rods */}
-        {rods.map(rod => (
-          <Line
-            key={rod.id}
-            points={[rod.start.x, rod.start.y, rod.end.x, rod.end.y]}
-            stroke="black"
-            strokeWidth={2}
-          />
-        ))}
-
-        {/* Draw pivots */}
-        {pivots.map(pivot => (
-          <Group key={pivot.id} x={pivot.position.x} y={pivot.position.y}>
-            <Circle radius={5} fill="black" />
-          </Group>
-        ))}
-
-        {/* Draw preview for rod being drawn */}
-        {isDrawing && startPoint && (
-          <Line
-            points={[
-              startPoint.x,
-              startPoint.y,
-              startPoint.x + 100, // This will be updated in mouseMove
-              startPoint.y + 100,
-            ]}
-            stroke="gray"
-            strokeWidth={2}
-            dash={[5, 5]}
-          />
-        )}
-      </Layer>
-    </Stage>
+      style={{ display: 'block' }}
+    />
   );
 }; 
