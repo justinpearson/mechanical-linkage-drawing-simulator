@@ -409,12 +409,6 @@ export const Canvas = ({
           });
         }
       });
-
-      setSelectionState(prev => ({
-        ...prev,
-        dragStartPoint: point,
-        originalElements: new Map(selectionState.originalElements),
-      }));
     }
   }, [isDrawing, startPoint, selectedTool, selectionState, onUpdateWheel, onUpdateRod, onUpdatePivot]);
 
@@ -432,17 +426,18 @@ export const Canvas = ({
       setStartPoint(null);
       setCurrentPoint(null);
     } else if (selectedTool === 'select' && selectionState.originalElements.size > 0) {
-      // Log the final position when drag is complete
+      // Get the final positions from the current state
       selectionState.selectedIds.forEach(id => {
-        const originalElement = selectionState.originalElements.get(id);
-        if (!originalElement) return;
-
-        if ('center' in originalElement) { // Wheel
-          onUpdateWheel(originalElement as Wheel, true);
-        } else if ('start' in originalElement) { // Rod
-          onUpdateRod(originalElement as Rod, true);
-        } else if ('position' in originalElement) { // Pivot
-          onUpdatePivot(originalElement as Pivot, true);
+        const wheel = wheels.find(w => w.id === id);
+        const rod = rods.find(r => r.id === id);
+        const pivot = pivots.find(p => p.id === id);
+        
+        if (wheel) {
+          onUpdateWheel(wheel, true);
+        } else if (rod) {
+          onUpdateRod(rod, true);
+        } else if (pivot) {
+          onUpdatePivot(pivot, true);
         }
       });
       
@@ -455,7 +450,7 @@ export const Canvas = ({
         originalElements: new Map(),
       });
     }
-  }, [isDrawing, startPoint, selectedTool, selectionState, onAddRod, onUpdateWheel, onUpdateRod, onUpdatePivot]);
+  }, [isDrawing, startPoint, selectedTool, selectionState, onAddRod, onUpdateWheel, onUpdateRod, onUpdatePivot, wheels, rods, pivots]);
 
   return (
     <CanvasContainer>
