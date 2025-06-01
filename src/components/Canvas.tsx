@@ -1,5 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Tool, Wheel, Rod, Pivot, Point } from './types';
+import styled from '@emotion/styled';
+
+const CanvasContainer = styled.div`
+  width: 800px;
+  height: 600px;
+  margin: 20px auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+`;
+
+const StyledCanvas = styled.canvas`
+  display: block;
+  width: 100%;
+  height: 100%;
+`;
 
 interface CanvasProps {
   selectedTool: Tool;
@@ -75,20 +92,15 @@ export const Canvas = ({
     }
   }, [wheels, rods, pivots, isDrawing, startPoint, currentPoint]);
 
-  // Update canvas size on window resize
+  // Set canvas size
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      draw();
-    };
-
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    return () => window.removeEventListener('resize', resizeCanvas);
+    // Set canvas size to match container size
+    canvas.width = 800;
+    canvas.height = 600;
+    draw();
   }, [draw]);
 
   // Redraw when elements change
@@ -149,12 +161,13 @@ export const Canvas = ({
   }, [isDrawing, startPoint, selectedTool, onAddRod]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      style={{ display: 'block' }}
-    />
+    <CanvasContainer>
+      <StyledCanvas
+        ref={canvasRef}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+      />
+    </CanvasContainer>
   );
 }; 
