@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Tool, Wheel, Rod, Pivot, Point } from './types';
+import type { Tool, Wheel, Rod, Pivot, Point, SelectionType, DragType, SelectionState } from './types';
 import styled from '@emotion/styled';
 
 const CanvasContainer = styled.div`
@@ -28,6 +28,71 @@ interface CanvasProps {
   onAddPivot: (pivot: Pivot) => void;
 }
 
+// Hit testing functions
+const isPointNearLine = (point: Point, start: Point, end: Point, threshold: number = 5): boolean => {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const length = Math.sqrt(dx * dx + dy * dy);
+  
+  if (length === 0) return false;
+  
+  const t = ((point.x - start.x) * dx + (point.y - start.y) * dy) / (length * length);
+  if (t < 0 || t > 1) return false;
+  
+  const projX = start.x + t * dx;
+  const projY = start.y + t * dy;
+  const dist = Math.sqrt((point.x - projX) ** 2 + (point.y - projY) ** 2);
+  
+  return dist <= threshold;
+};
+
+const isPointNearPoint = (p1: Point, p2: Point, threshold: number = 5): boolean => {
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  return Math.sqrt(dx * dx + dy * dy) <= threshold;
+};
+
+const hitTestWheel = (point: Point, wheel: Wheel): { type: SelectionType; dragType: DragType } | null => {
+  const distFromCenter = Math.sqrt(
+    (point.x - wheel.center.x) ** 2 + (point.y - wheel.center.y) ** 2
+  );
+  
+  if (distFromCenter <= wheel.radius) {
+    // Check if near edge (within 5 pixels)
+    if (Math.abs(distFromCenter - wheel.radius) <= 5) {
+      return { type: 'wheel', dragType: 'wheel-edge' };
+    }
+    // Otherwise it's a center drag
+    return { type: 'wheel', dragType: 'wheel-center' };
+  }
+  
+  return null;
+};
+
+const hitTestRod = (point: Point, rod: Rod): { type: SelectionType; dragType: DragType } | null => {
+  // Check if near endpoints
+  if (isPointNearPoint(point, rod.start)) {
+    return { type: 'rod', dragType: 'rod-end' };
+  }
+  if (isPointNearPoint(point, rod.end)) {
+    return { type: 'rod', dragType: 'rod-end' };
+  }
+  
+  // Check if near the line
+  if (isPointNearLine(point, rod.start, rod.end)) {
+    return { type: 'rod', dragType: 'rod-middle' };
+  }
+  
+  return null;
+};
+
+const hitTestPivot = (point: Point, pivot: Pivot): { type: SelectionType; dragType: DragType } | null => {
+  if (isPointNearPoint(point, pivot.position)) {
+    return { type: 'pivot', dragType: 'pivot' };
+  }
+  return null;
+};
+
 export const Canvas = ({
   selectedTool,
   wheels,
@@ -41,6 +106,13 @@ export const Canvas = ({
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPoint, setStartPoint] = useState<Point | null>(null);
   const [currentPoint, setCurrentPoint] = useState<Point | null>(null);
+  const [selectionState, setSelectionState] = useState<SelectionState>({
+    selectedId: null,
+    selectionType: null,
+    dragType: null,
+    dragStartPoint: null,
+    originalElement: null,
+  });
 
   // Draw everything on the canvas
   const draw = useCallback(() => {
@@ -156,7 +228,59 @@ export const Canvas = ({
     const point = getCanvasPoint(e);
     console.log('Canvas MouseDown', { point, selectedTool });
     
-    if (selectedTool === 'wheel') {
+    if (selectedTool === 'select') {
+      // Hit test all elements
+      for (const wheel of wheels) {
+        const hit = hitTestWheel(point, wheel);
+        if (hit) {
+          setSelectionState({
+            selectedId: wheel.id,
+            selectionType: hit.type,
+            dragType: hit.dragType,
+            dragStartPoint: point,
+            originalElement: wheel,
+          });
+          return;
+        }
+      }
+      
+      for (const rod of rods) {
+        const hit = hitTestRod(point, rod);
+        if (hit) {
+          setSelectionState({
+            selectedId: rod.id,
+            selectionType: hit.type,
+            dragType: hit.dragType,
+            dragStartPoint: point,
+            originalElement: rod,
+          });
+          return;
+        }
+      }
+      
+      for (const pivot of pivots) {
+        const hit = hitTestPivot(point, pivot);
+        if (hit) {
+          setSelectionState({
+            selectedId: pivot.id,
+            selectionType: hit.type,
+            dragType: hit.dragType,
+            dragStartPoint: point,
+            originalElement: pivot,
+          });
+          return;
+        }
+      }
+      
+      // If we get here, nothing was hit
+      setSelectionState({
+        selectedId: null,
+        selectionType: null,
+        dragType: null,
+        dragStartPoint: null,
+        originalElement: null,
+      });
+    } else if (selectedTool === 'wheel') {
       console.log('Placing wheel at', point);
       onAddWheel({
         id: `wheel-${Date.now()}`,
@@ -175,7 +299,7 @@ export const Canvas = ({
         position: point,
       });
     }
-  }, [selectedTool, onAddWheel, onAddRod, onAddPivot]);
+  }, [selectedTool, onAddWheel, onAddRod, onAddPivot, wheels, rods, pivots]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing || !startPoint || selectedTool !== 'rod') return;
