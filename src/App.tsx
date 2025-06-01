@@ -89,12 +89,16 @@ function App() {
       </header>
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-        <Toolbar selectedTool={selectedTool} onToolSelect={(tool) => { 
-          const message = `Select Tool: ${tool}`;
-          console.log(message);
-          setHistory(prev => [{ message, timestamp: new Date() }, ...prev]);
-          setSelectedTool(tool); 
-        }} />
+        <Toolbar 
+          selectedTool={selectedTool} 
+          onToolSelect={(tool) => { 
+            const message = `Select Tool: ${tool}`;
+            console.log(message);
+            setHistory(prev => [{ message, timestamp: new Date() }, ...prev]);
+            setSelectedTool(tool); 
+          }}
+          selectedCount={selectedIds.size}
+        />
         <Canvas
           selectedTool={selectedTool}
           wheels={wheels}
