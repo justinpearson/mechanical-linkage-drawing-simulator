@@ -324,38 +324,59 @@ export const Canvas = ({
         const wheel = selectionState.originalElement as Wheel;
         if (selectionState.dragType === 'wheel-center') {
           // Move wheel center
-          onUpdateWheel({
+          const updatedWheel = {
             ...wheel,
             center: {
               x: wheel.center.x + dx,
               y: wheel.center.y + dy,
             },
-          });
+          };
+          onUpdateWheel(updatedWheel);
+          // Update the original element with the new position
+          setSelectionState(prev => ({
+            ...prev,
+            originalElement: updatedWheel,
+            dragStartPoint: point,
+          }));
         } else if (selectionState.dragType === 'wheel-edge') {
           // Resize wheel
           const newRadius = Math.sqrt(
             (point.x - wheel.center.x) ** 2 + (point.y - wheel.center.y) ** 2
           );
-          onUpdateWheel({
+          const updatedWheel = {
             ...wheel,
             radius: newRadius,
-          });
+          };
+          onUpdateWheel(updatedWheel);
+          // Update the original element with the new radius
+          setSelectionState(prev => ({
+            ...prev,
+            originalElement: updatedWheel,
+            dragStartPoint: point,
+          }));
         }
       } else if (selectionState.selectionType === 'rod' && selectionState.originalElement) {
         const rod = selectionState.originalElement as Rod;
         if (selectionState.dragType === 'rod-end') {
           // Move rod endpoint
           const isStart = isPointNearPoint(selectionState.dragStartPoint, rod.start);
-          onUpdateRod({
+          const updatedRod = {
             ...rod,
             [isStart ? 'start' : 'end']: {
               x: point.x,
               y: point.y,
             },
-          });
+          };
+          onUpdateRod(updatedRod);
+          // Update the original element with the new position
+          setSelectionState(prev => ({
+            ...prev,
+            originalElement: updatedRod,
+            dragStartPoint: point,
+          }));
         } else if (selectionState.dragType === 'rod-middle') {
           // Move entire rod
-          onUpdateRod({
+          const updatedRod = {
             ...rod,
             start: {
               x: rod.start.x + dx,
@@ -365,25 +386,33 @@ export const Canvas = ({
               x: rod.end.x + dx,
               y: rod.end.y + dy,
             },
-          });
+          };
+          onUpdateRod(updatedRod);
+          // Update the original element with the new position
+          setSelectionState(prev => ({
+            ...prev,
+            originalElement: updatedRod,
+            dragStartPoint: point,
+          }));
         }
       } else if (selectionState.selectionType === 'pivot' && selectionState.originalElement) {
         const pivot = selectionState.originalElement as Pivot;
         // Move pivot
-        onUpdatePivot({
+        const updatedPivot = {
           ...pivot,
           position: {
             x: pivot.position.x + dx,
             y: pivot.position.y + dy,
           },
-        });
+        };
+        onUpdatePivot(updatedPivot);
+        // Update the original element with the new position
+        setSelectionState(prev => ({
+          ...prev,
+          originalElement: updatedPivot,
+          dragStartPoint: point,
+        }));
       }
-      
-      // Update drag start point
-      setSelectionState(prev => ({
-        ...prev,
-        dragStartPoint: point,
-      }));
     }
   }, [isDrawing, startPoint, selectedTool, selectionState, onUpdateWheel, onUpdateRod, onUpdatePivot]);
 
