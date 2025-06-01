@@ -32,24 +32,30 @@ function App() {
     setPivots(prev => [pivot, ...prev])
   }
 
-  const handleUpdateWheel = (wheel: Wheel) => {
-    const message = `Update Wheel at (${wheel.center.x.toFixed(1)}, ${wheel.center.y.toFixed(1)})`;
-    console.log(message);
-    setHistory(prev => [{ message, timestamp: new Date() }, ...prev]);
+  const handleUpdateWheel = (wheel: Wheel, isDragComplete: boolean = false) => {
+    if (isDragComplete) {
+      const message = `Update Wheel at (${wheel.center.x.toFixed(1)}, ${wheel.center.y.toFixed(1)})`;
+      console.log(message);
+      setHistory(prev => [{ message, timestamp: new Date() }, ...prev]);
+    }
     setWheels(prev => prev.map(w => w.id === wheel.id ? wheel : w));
   }
 
-  const handleUpdateRod = (rod: Rod) => {
-    const message = `Update Rod from (${rod.start.x.toFixed(1)}, ${rod.start.y.toFixed(1)}) to (${rod.end.x.toFixed(1)}, ${rod.end.y.toFixed(1)})`;
-    console.log(message);
-    setHistory(prev => [{ message, timestamp: new Date() }, ...prev]);
+  const handleUpdateRod = (rod: Rod, isDragComplete: boolean = false) => {
+    if (isDragComplete) {
+      const message = `Update Rod from (${rod.start.x.toFixed(1)}, ${rod.start.y.toFixed(1)}) to (${rod.end.x.toFixed(1)}, ${rod.end.y.toFixed(1)})`;
+      console.log(message);
+      setHistory(prev => [{ message, timestamp: new Date() }, ...prev]);
+    }
     setRods(prev => prev.map(r => r.id === rod.id ? rod : r));
   }
 
-  const handleUpdatePivot = (pivot: Pivot) => {
-    const message = `Update Pivot at (${pivot.position.x.toFixed(1)}, ${pivot.position.y.toFixed(1)})`;
-    console.log(message);
-    setHistory(prev => [{ message, timestamp: new Date() }, ...prev]);
+  const handleUpdatePivot = (pivot: Pivot, isDragComplete: boolean = false) => {
+    if (isDragComplete) {
+      const message = `Update Pivot at (${pivot.position.x.toFixed(1)}, ${pivot.position.y.toFixed(1)})`;
+      console.log(message);
+      setHistory(prev => [{ message, timestamp: new Date() }, ...prev]);
+    }
     setPivots(prev => prev.map(p => p.id === pivot.id ? pivot : p));
   }
 

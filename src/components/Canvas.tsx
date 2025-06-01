@@ -26,9 +26,9 @@ interface CanvasProps {
   onAddWheel: (wheel: Wheel) => void;
   onAddRod: (rod: Rod) => void;
   onAddPivot: (pivot: Pivot) => void;
-  onUpdateWheel: (wheel: Wheel) => void;
-  onUpdateRod: (rod: Rod) => void;
-  onUpdatePivot: (pivot: Pivot) => void;
+  onUpdateWheel: (wheel: Wheel, isDragComplete?: boolean) => void;
+  onUpdateRod: (rod: Rod, isDragComplete?: boolean) => void;
+  onUpdatePivot: (pivot: Pivot, isDragComplete?: boolean) => void;
 }
 
 // Hit testing functions
@@ -349,7 +349,7 @@ export const Canvas = ({
               y: wheel.center.y + dy,
             },
           };
-          onUpdateWheel(updatedWheel);
+          onUpdateWheel(updatedWheel, false);
           // Update the original element with the new position
           setSelectionState(prev => ({
             ...prev,
@@ -365,7 +365,7 @@ export const Canvas = ({
             ...wheel,
             radius: newRadius,
           };
-          onUpdateWheel(updatedWheel);
+          onUpdateWheel(updatedWheel, false);
           // Update the original element with the new radius
           setSelectionState(prev => ({
             ...prev,
@@ -385,7 +385,7 @@ export const Canvas = ({
               y: point.y,
             },
           };
-          onUpdateRod(updatedRod);
+          onUpdateRod(updatedRod, false);
           // Update the original element with the new position
           setSelectionState(prev => ({
             ...prev,
@@ -405,7 +405,7 @@ export const Canvas = ({
               y: rod.end.y + dy,
             },
           };
-          onUpdateRod(updatedRod);
+          onUpdateRod(updatedRod, false);
           // Update the original element with the new position
           setSelectionState(prev => ({
             ...prev,
@@ -423,7 +423,7 @@ export const Canvas = ({
             y: pivot.position.y + dy,
           },
         };
-        onUpdatePivot(updatedPivot);
+        onUpdatePivot(updatedPivot, false);
         // Update the original element with the new position
         setSelectionState(prev => ({
           ...prev,
@@ -447,7 +447,16 @@ export const Canvas = ({
       setIsDrawing(false);
       setStartPoint(null);
       setCurrentPoint(null);
-    } else if (selectedTool === 'select') {
+    } else if (selectedTool === 'select' && selectionState.originalElement) {
+      // Log the final position when drag is complete
+      if (selectionState.selectionType === 'wheel') {
+        onUpdateWheel(selectionState.originalElement as Wheel, true);
+      } else if (selectionState.selectionType === 'rod') {
+        onUpdateRod(selectionState.originalElement as Rod, true);
+      } else if (selectionState.selectionType === 'pivot') {
+        onUpdatePivot(selectionState.originalElement as Pivot, true);
+      }
+      
       // Clear selection state
       setSelectionState({
         selectedId: null,
@@ -457,7 +466,7 @@ export const Canvas = ({
         originalElement: null,
       });
     }
-  }, [isDrawing, startPoint, selectedTool, onAddRod]);
+  }, [isDrawing, startPoint, selectedTool, selectionState, onAddRod, onUpdateWheel, onUpdateRod, onUpdatePivot]);
 
   return (
     <CanvasContainer>
