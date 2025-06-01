@@ -28,4 +28,16 @@ export interface DrawingState {
   pivots: Pivot[];
   selectedTool: Tool;
   selectedElement: string | null;
+}
+
+// New types for selection and dragging
+export type SelectionType = 'wheel' | 'rod' | 'pivot' | null;
+export type DragType = 'wheel-center' | 'wheel-edge' | 'rod-end' | 'rod-middle' | 'pivot' | null;
+
+export interface SelectionState {
+  selectedId: string | null;
+  selectionType: SelectionType;
+  dragType: DragType;
+  dragStartPoint: Point | null;
+  originalElement: Wheel | Rod | Pivot | null;
 } 
