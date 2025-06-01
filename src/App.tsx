@@ -9,33 +9,33 @@ function App() {
   const [wheels, setWheels] = useState<Wheel[]>([])
   const [rods, setRods] = useState<Rod[]>([])
   const [pivots, setPivots] = useState<Pivot[]>([])
-  const [history, setHistory] = useState<string[]>([])
+  const [history, setHistory] = useState<{ message: string; timestamp: Date }[]>([])
 
   const handleAddWheel = (wheel: Wheel) => {
     const message = `Add Wheel at (${wheel.center.x.toFixed(1)}, ${wheel.center.y.toFixed(1)})`;
     console.log(message);
-    setHistory(prev => [...prev, message]);
-    setWheels(prev => [...prev, wheel])
+    setHistory(prev => [{ message, timestamp: new Date() }, ...prev]);
+    setWheels(prev => [wheel, ...prev])
   }
 
   const handleAddRod = (rod: Rod) => {
     const message = `Add Rod from (${rod.start.x.toFixed(1)}, ${rod.start.y.toFixed(1)}) to (${rod.end.x.toFixed(1)}, ${rod.end.y.toFixed(1)})`;
     console.log(message);
-    setHistory(prev => [...prev, message]);
-    setRods(prev => [...prev, rod])
+    setHistory(prev => [{ message, timestamp: new Date() }, ...prev]);
+    setRods(prev => [rod, ...prev])
   }
 
   const handleAddPivot = (pivot: Pivot) => {
     const message = `Add Pivot at (${pivot.position.x.toFixed(1)}, ${pivot.position.y.toFixed(1)})`;
     console.log(message);
-    setHistory(prev => [...prev, message]);
-    setPivots(prev => [...prev, pivot])
+    setHistory(prev => [{ message, timestamp: new Date() }, ...prev]);
+    setPivots(prev => [pivot, ...prev])
   }
 
   const handleDeleteAll = () => {
     const message = 'Delete all elements';
     console.log(message);
-    setHistory(prev => [...prev, message]);
+    setHistory(prev => [{ message, timestamp: new Date() }, ...prev]);
     setWheels([]);
     setRods([]);
     setPivots([]);
@@ -43,6 +43,10 @@ function App() {
 
   const handleClearHistory = () => {
     setHistory([]);
+  }
+
+  const formatTimestamp = (date: Date) => {
+    return date.toLocaleTimeString();
   }
 
   return (
@@ -60,7 +64,7 @@ function App() {
         <Toolbar selectedTool={selectedTool} onToolSelect={(tool) => { 
           const message = `Select Tool: ${tool}`;
           console.log(message);
-          setHistory(prev => [...prev, message]);
+          setHistory(prev => [{ message, timestamp: new Date() }, ...prev]);
           setSelectedTool(tool); 
         }} />
         <Canvas
@@ -145,13 +149,15 @@ function App() {
         <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
           <thead>
             <tr>
+              <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left', padding: 8 }}>Time</th>
               <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left', padding: 8 }}>Action</th>
             </tr>
           </thead>
           <tbody>
-            {history.map((action, index) => (
+            {history.map((entry, index) => (
               <tr key={index}>
-                <td style={{ padding: 8 }}>{action}</td>
+                <td style={{ padding: 8 }}>{formatTimestamp(entry.timestamp)}</td>
+                <td style={{ padding: 8 }}>{entry.message}</td>
               </tr>
             ))}
           </tbody>
