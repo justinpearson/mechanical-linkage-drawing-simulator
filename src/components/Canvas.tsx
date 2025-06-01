@@ -83,13 +83,15 @@ export const Canvas = ({
     wheels.forEach(wheel => {
       ctx.beginPath();
       ctx.arc(wheel.center.x, wheel.center.y, wheel.radius, 0, Math.PI * 2);
+      ctx.fillStyle = 'white';
+      ctx.fill();
       ctx.stroke();
 
       // Draw radial line to show orientation (from center to edge at 0 radians)
       ctx.beginPath();
       ctx.moveTo(wheel.center.x, wheel.center.y);
       ctx.lineTo(wheel.center.x + wheel.radius, wheel.center.y);
-      ctx.strokeStyle = 'red';
+      ctx.strokeStyle = 'black';
       ctx.lineWidth = 2;
       ctx.stroke();
       ctx.strokeStyle = 'black'; // reset for other elements
