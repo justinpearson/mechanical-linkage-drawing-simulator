@@ -178,17 +178,35 @@ export const Canvas = ({
 
     // Draw rods
     rods.forEach(rod => {
+      // Draw the main line
       ctx.beginPath();
       ctx.moveTo(rod.start.x, rod.start.y);
       ctx.lineTo(rod.end.x, rod.end.y);
       ctx.stroke();
+
+      // Draw circular endpoints
+      const endpointRadius = 4;
+      ctx.beginPath();
+      ctx.arc(rod.start.x, rod.start.y, endpointRadius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(rod.end.x, rod.end.y, endpointRadius, 0, Math.PI * 2);
+      ctx.fill();
     });
 
     // Draw pivots
     pivots.forEach(pivot => {
       ctx.beginPath();
-      ctx.arc(pivot.position.x, pivot.position.y, 5, 0, Math.PI * 2);
+      ctx.arc(pivot.position.x, pivot.position.y, 6, 0, Math.PI * 2);
+      ctx.fillStyle = 'black';
       ctx.fill();
+      // Add a white border to make it more visible
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      // Reset styles
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 2;
     });
 
     // Draw preview for rod being drawn
