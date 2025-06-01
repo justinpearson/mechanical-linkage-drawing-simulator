@@ -1,0 +1,17 @@
+For this next iteration, please make the following user interface improvements. Each of the following features should be in its own git commit.
+
+1. Add a favicon. Use the file src/assets/favicon.png and feel free to change the size / file format if necessary.
+
+2. Change the HTML's title from "Vite + React + TS" to "Mechanical Linkage Drawing"
+
+3. Toolbar items should be words, not emojis.
+
+4. Make the canvas a fixed, limited size -- not the whole webpage.
+
+5. Add gridlines to the drawing canvas.
+
+6. Below the canvas, add a table of the currently-drawn elements. The table lists each element's type and position. For Rods, use the rod's midpoint as its position.
+
+7. Add a radial line to the rendering of a Wheel, to show its orientation.
+
+8. Add console.log messages upon various UI actions, to facilitate debugging. 

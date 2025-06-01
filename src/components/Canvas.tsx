@@ -1,5 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Tool, Wheel, Rod, Pivot, Point } from './types';
+import styled from '@emotion/styled';
+
+const CanvasContainer = styled.div`
+  width: 800px;
+  height: 600px;
+  margin: 20px auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+`;
+
+const StyledCanvas = styled.canvas`
+  display: block;
+  width: 100%;
+  height: 100%;
+`;
 
 interface CanvasProps {
   selectedTool: Tool;
@@ -36,7 +53,28 @@ export const Canvas = ({
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Set default styles
+    // Draw grid
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.lineWidth = 1;
+    const gridSize = 20;
+
+    // Draw vertical lines
+    for (let x = 0; x <= canvas.width; x += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+
+    // Draw horizontal lines
+    for (let y = 0; y <= canvas.height; y += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
+
+    // Set default styles for elements
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 2;
     ctx.fillStyle = 'black';
@@ -46,6 +84,16 @@ export const Canvas = ({
       ctx.beginPath();
       ctx.arc(wheel.center.x, wheel.center.y, wheel.radius, 0, Math.PI * 2);
       ctx.stroke();
+
+      // Draw radial line to show orientation (from center to edge at 0 radians)
+      ctx.beginPath();
+      ctx.moveTo(wheel.center.x, wheel.center.y);
+      ctx.lineTo(wheel.center.x + wheel.radius, wheel.center.y);
+      ctx.strokeStyle = 'red';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.strokeStyle = 'black'; // reset for other elements
+      ctx.lineWidth = 2;
     });
 
     // Draw rods
@@ -75,20 +123,15 @@ export const Canvas = ({
     }
   }, [wheels, rods, pivots, isDrawing, startPoint, currentPoint]);
 
-  // Update canvas size on window resize
+  // Set canvas size
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      draw();
-    };
-
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    return () => window.removeEventListener('resize', resizeCanvas);
+    // Set canvas size to match container size
+    canvas.width = 800;
+    canvas.height = 600;
+    draw();
   }, [draw]);
 
   // Redraw when elements change
@@ -109,18 +152,22 @@ export const Canvas = ({
 
   const handleMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const point = getCanvasPoint(e);
+    console.log('Canvas MouseDown', { point, selectedTool });
     
     if (selectedTool === 'wheel') {
+      console.log('Placing wheel at', point);
       onAddWheel({
         id: `wheel-${Date.now()}`,
         center: point,
         radius: 30, // Default radius
       });
     } else if (selectedTool === 'rod') {
+      console.log('Start drawing rod at', point);
       setIsDrawing(true);
       setStartPoint(point);
       setCurrentPoint(point);
     } else if (selectedTool === 'pivot') {
+      console.log('Placing pivot at', point);
       onAddPivot({
         id: `pivot-${Date.now()}`,
         position: point,
@@ -130,13 +177,15 @@ export const Canvas = ({
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing || !startPoint || selectedTool !== 'rod') return;
-    setCurrentPoint(getCanvasPoint(e));
+    const point = getCanvasPoint(e);
+    console.log('Drawing rod preview to', point);
+    setCurrentPoint(point);
   }, [isDrawing, startPoint, selectedTool]);
 
   const handleMouseUp = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing || !startPoint || selectedTool !== 'rod') return;
-
     const endPoint = getCanvasPoint(e);
+    console.log('Finish drawing rod at', endPoint);
     onAddRod({
       id: `rod-${Date.now()}`,
       start: startPoint,
@@ -149,12 +198,13 @@ export const Canvas = ({
   }, [isDrawing, startPoint, selectedTool, onAddRod]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      style={{ display: 'block' }}
-    />
+    <CanvasContainer>
+      <StyledCanvas
+        ref={canvasRef}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+      />
+    </CanvasContainer>
   );
 }; 
