@@ -1,0 +1,12 @@
+For this next iteration, let's make the Select button work for dragging and resizing elements. Please implement the following features, using separate git commits to logically separate your code changes.
+
+When Select button is active, the user can drag elements around on the canvas as follows:
+
+1. Wheel movement / scaling logic:
+    - Drag a wheel's interior to reposition it.
+    - Drag a wheel's edge to change its radius.
+2. Rod movement / scaling logic:
+    - Drag the end of a rod to change ONLY that endpoint -- the Rod's other endpoint stays fixed.
+    - Drag the middle of a rod to reposition it.
+3. Pivot movement logic:
+    - Drag a Pivot to reposition it. 
