@@ -16,7 +16,7 @@ const ToolbarContainer = styled.div`
 `;
 
 const ToolButton = styled.button<{ isSelected: boolean }>`
-  width: 40px;
+  min-width: 80px;
   height: 40px;
   border: none;
   border-radius: 4px;
@@ -25,7 +25,7 @@ const ToolButton = styled.button<{ isSelected: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 14px;
   transition: background-color 0.2s;
 
   &:hover {
@@ -39,11 +39,11 @@ interface ToolbarProps {
 }
 
 export const Toolbar = ({ selectedTool, onToolSelect }: ToolbarProps) => {
-  const tools: { id: Tool; icon: string }[] = [
-    { id: 'select', icon: '👆' },
-    { id: 'wheel', icon: '⭕' },
-    { id: 'rod', icon: '📏' },
-    { id: 'pivot', icon: '📍' },
+  const tools: { id: Tool; label: string }[] = [
+    { id: 'select', label: 'Select' },
+    { id: 'wheel', label: 'Wheel' },
+    { id: 'rod', label: 'Rod' },
+    { id: 'pivot', label: 'Pivot' },
   ];
 
   return (
@@ -53,9 +53,9 @@ export const Toolbar = ({ selectedTool, onToolSelect }: ToolbarProps) => {
           key={tool.id}
           isSelected={selectedTool === tool.id}
           onClick={() => onToolSelect(tool.id)}
-          title={tool.id.charAt(0).toUpperCase() + tool.id.slice(1)}
+          title={tool.label}
         >
-          {tool.icon}
+          {tool.label}
         </ToolButton>
       ))}
     </ToolbarContainer>
