@@ -27,16 +27,28 @@ function App() {
 
   return (
     <div className="app">
-      <Toolbar selectedTool={selectedTool} onToolSelect={(tool) => { console.log('Select Tool', tool); setSelectedTool(tool); }} />
-      <Canvas
-        selectedTool={selectedTool}
-        wheels={wheels}
-        rods={rods}
-        pivots={pivots}
-        onAddWheel={handleAddWheel}
-        onAddRod={handleAddRod}
-        onAddPivot={handleAddPivot}
-      />
+      <header style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <h1>Mechanical Linkage Drawing Simulator</h1>
+        <p style={{ maxWidth: '800px', margin: '0 auto', lineHeight: '1.6' }}>
+          This is a web app for generating drawings via mechanical linkage systems, like the "Spirograph" children's toy, or fancy scrollwork on currency ("intaglio").
+          <br /><br />
+          A mechanical linkage is basically a collection of rotating wheels and rods that are attached to each other in some way. In this app, the user can create wheels and rods, connect them together, and play an animation that simulates the wheels turning and the linkage arms moving around. It is basically a 2D, lightweight, heavily constrained physics simulator.
+        </p>
+      </header>
+
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+        <Toolbar selectedTool={selectedTool} onToolSelect={(tool) => { console.log('Select Tool', tool); setSelectedTool(tool); }} />
+        <Canvas
+          selectedTool={selectedTool}
+          wheels={wheels}
+          rods={rods}
+          pivots={pivots}
+          onAddWheel={handleAddWheel}
+          onAddRod={handleAddRod}
+          onAddPivot={handleAddPivot}
+        />
+      </div>
+
       <div style={{ width: 800, margin: '20px auto' }}>
         <h3>Elements</h3>
         <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>

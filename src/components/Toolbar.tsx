@@ -2,17 +2,14 @@ import styled from '@emotion/styled';
 import type { Tool } from './types';
 
 const ToolbarContainer = styled.div`
-  position: fixed;
-  left: 20px;
-  top: 50%;
-  transform: translateY(-50%);
   background: white;
   padding: 10px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 10px;
+  justify-content: center;
 `;
 
 const ToolButton = styled.button<{ isSelected: boolean }>`
