@@ -49,7 +49,7 @@ function App() {
     <div className="app">
       <header style={{ textAlign: 'center', marginBottom: '20px' }}>
         <h1>Mechanical Linkage Drawing Simulator</h1>
-        <p style={{ maxWidth: '800px', margin: '0 auto', lineHeight: '1.6' }}>
+        <p style={{ maxWidth: '800px', margin: '0 auto', lineHeight: '1.6', textAlign: 'left' }}>
           This is a web app for generating drawings via mechanical linkage systems, like the "Spirograph" children's toy, or fancy scrollwork on currency ("intaglio").
           <br /><br />
           A mechanical linkage is basically a collection of rotating wheels and rods that are attached to each other in some way. In this app, the user can create wheels and rods, connect them together, and play an animation that simulates the wheels turning and the linkage arms moving around. It is basically a 2D, lightweight, heavily constrained physics simulator.
