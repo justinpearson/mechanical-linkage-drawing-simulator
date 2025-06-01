@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Tool, Wheel, Rod, Pivot, Point, SelectionType, DragType, SelectionState } from './types';
+import type { Tool, Wheel, Rod, Pivot, Point, SelectionType, DragType, SelectionState, SelectedElements } from './types';
 import styled from '@emotion/styled';
 
 const CanvasContainer = styled.div`
@@ -113,11 +113,11 @@ export const Canvas = ({
   const [startPoint, setStartPoint] = useState<Point | null>(null);
   const [currentPoint, setCurrentPoint] = useState<Point | null>(null);
   const [selectionState, setSelectionState] = useState<SelectionState>({
-    selectedId: null,
+    selectedIds: new Set(),
     selectionType: null,
     dragType: null,
     dragStartPoint: null,
-    originalElement: null,
+    originalElements: new Map(),
   });
 
   // Draw everything on the canvas
@@ -161,18 +161,17 @@ export const Canvas = ({
     wheels.forEach(wheel => {
       ctx.beginPath();
       ctx.arc(wheel.center.x, wheel.center.y, wheel.radius, 0, Math.PI * 2);
-      ctx.fillStyle = 'white';
+      ctx.fillStyle = selectionState.selectedIds.has(wheel.id) ? '#e6f3ff' : 'white';
       ctx.fill();
+      ctx.strokeStyle = selectionState.selectedIds.has(wheel.id) ? '#0066cc' : 'black';
       ctx.stroke();
 
-      // Draw radial line to show orientation (from center to edge at 0 radians)
+      // Draw radial line to show orientation
       ctx.beginPath();
       ctx.moveTo(wheel.center.x, wheel.center.y);
       ctx.lineTo(wheel.center.x + wheel.radius, wheel.center.y);
-      ctx.strokeStyle = 'black';
-      ctx.lineWidth = 2;
       ctx.stroke();
-      ctx.strokeStyle = 'black'; // reset for other elements
+      ctx.strokeStyle = 'black';
       ctx.lineWidth = 2;
     });
 
@@ -182,6 +181,7 @@ export const Canvas = ({
       ctx.beginPath();
       ctx.moveTo(rod.start.x, rod.start.y);
       ctx.lineTo(rod.end.x, rod.end.y);
+      ctx.strokeStyle = selectionState.selectedIds.has(rod.id) ? '#0066cc' : 'black';
       ctx.stroke();
 
       // Draw circular endpoints
@@ -198,7 +198,7 @@ export const Canvas = ({
     pivots.forEach(pivot => {
       ctx.beginPath();
       ctx.arc(pivot.position.x, pivot.position.y, 6, 0, Math.PI * 2);
-      ctx.fillStyle = 'black';
+      ctx.fillStyle = selectionState.selectedIds.has(pivot.id) ? '#0066cc' : 'black';
       ctx.fill();
       // Add a white border to make it more visible
       ctx.strokeStyle = 'white';
@@ -219,7 +219,7 @@ export const Canvas = ({
       ctx.stroke();
       ctx.setLineDash([]);
     }
-  }, [wheels, rods, pivots, isDrawing, startPoint, currentPoint]);
+  }, [wheels, rods, pivots, isDrawing, startPoint, currentPoint, selectionState.selectedIds]);
 
   // Set canvas size
   useEffect(() => {
@@ -253,57 +253,84 @@ export const Canvas = ({
     console.log('Canvas MouseDown', { point, selectedTool });
     
     if (selectedTool === 'select') {
-      // Hit test all elements
+      // Find the element under the cursor
+      let hitElement: { id: string; type: SelectionType; dragType: DragType } | null = null;
+      
+      // Check wheels
       for (const wheel of wheels) {
         const hit = hitTestWheel(point, wheel);
         if (hit) {
-          setSelectionState({
-            selectedId: wheel.id,
-            selectionType: hit.type,
-            dragType: hit.dragType,
-            dragStartPoint: point,
-            originalElement: wheel,
-          });
-          return;
+          hitElement = { id: wheel.id, type: hit.type, dragType: hit.dragType };
+          break;
         }
       }
       
-      for (const rod of rods) {
-        const hit = hitTestRod(point, rod);
-        if (hit) {
-          setSelectionState({
-            selectedId: rod.id,
-            selectionType: hit.type,
-            dragType: hit.dragType,
-            dragStartPoint: point,
-            originalElement: rod,
-          });
-          return;
+      // Check rods if no wheel hit
+      if (!hitElement) {
+        for (const rod of rods) {
+          const hit = hitTestRod(point, rod);
+          if (hit) {
+            hitElement = { id: rod.id, type: hit.type, dragType: hit.dragType };
+            break;
+          }
         }
       }
       
-      for (const pivot of pivots) {
-        const hit = hitTestPivot(point, pivot);
-        if (hit) {
-          setSelectionState({
-            selectedId: pivot.id,
-            selectionType: hit.type,
-            dragType: hit.dragType,
-            dragStartPoint: point,
-            originalElement: pivot,
-          });
-          return;
+      // Check pivots if no rod hit
+      if (!hitElement) {
+        for (const pivot of pivots) {
+          const hit = hitTestPivot(point, pivot);
+          if (hit) {
+            hitElement = { id: pivot.id, type: hit.type, dragType: hit.dragType };
+            break;
+          }
         }
       }
-      
-      // If we get here, nothing was hit
-      setSelectionState({
-        selectedId: null,
-        selectionType: null,
-        dragType: null,
-        dragStartPoint: null,
-        originalElement: null,
-      });
+
+      if (hitElement) {
+        const newSelectedIds = new Set(selectionState.selectedIds);
+        
+        if (e.shiftKey) {
+          // Toggle selection with shift key
+          if (newSelectedIds.has(hitElement.id)) {
+            newSelectedIds.delete(hitElement.id);
+          } else {
+            newSelectedIds.add(hitElement.id);
+          }
+        } else {
+          // Single selection without shift key
+          newSelectedIds.clear();
+          newSelectedIds.add(hitElement.id);
+        }
+
+        // Store original elements for dragging
+        const originalElements = new Map<string, Wheel | Rod | Pivot>();
+        newSelectedIds.forEach(id => {
+          const wheel = wheels.find(w => w.id === id);
+          const rod = rods.find(r => r.id === id);
+          const pivot = pivots.find(p => p.id === id);
+          if (wheel) originalElements.set(id, wheel);
+          if (rod) originalElements.set(id, rod);
+          if (pivot) originalElements.set(id, pivot);
+        });
+
+        setSelectionState({
+          selectedIds: newSelectedIds,
+          selectionType: hitElement.type,
+          dragType: hitElement.dragType,
+          dragStartPoint: point,
+          originalElements,
+        });
+      } else if (!e.shiftKey) {
+        // Clear selection if clicking empty space without shift
+        setSelectionState({
+          selectedIds: new Set(),
+          selectionType: null,
+          dragType: null,
+          dragStartPoint: null,
+          originalElements: new Map(),
+        });
+      }
     } else if (selectedTool === 'wheel') {
       console.log('Placing wheel at', point);
       onAddWheel({
@@ -323,7 +350,7 @@ export const Canvas = ({
         position: point,
       });
     }
-  }, [selectedTool, onAddWheel, onAddRod, onAddPivot, wheels, rods, pivots]);
+  }, [selectedTool, onAddWheel, onAddRod, onAddPivot, wheels, rods, pivots, selectionState.selectedIds]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const point = getCanvasPoint(e);
@@ -334,67 +361,27 @@ export const Canvas = ({
       return;
     }
     
-    if (selectedTool === 'select' && selectionState.dragType && selectionState.dragStartPoint && selectionState.originalElement) {
+    if (selectedTool === 'select' && selectionState.dragType && selectionState.dragStartPoint && selectionState.originalElements.size > 0) {
       const dx = point.x - selectionState.dragStartPoint.x;
       const dy = point.y - selectionState.dragStartPoint.y;
       
-      if (selectionState.selectionType === 'wheel' && selectionState.originalElement) {
-        const wheel = selectionState.originalElement as Wheel;
-        if (selectionState.dragType === 'wheel-center') {
-          // Move wheel center
-          const updatedWheel = {
+      // Update all selected elements
+      selectionState.selectedIds.forEach(id => {
+        const originalElement = selectionState.originalElements.get(id);
+        if (!originalElement) return;
+
+        if ('center' in originalElement) { // Wheel
+          const wheel = originalElement as Wheel;
+          onUpdateWheel({
             ...wheel,
             center: {
               x: wheel.center.x + dx,
               y: wheel.center.y + dy,
             },
-          };
-          onUpdateWheel(updatedWheel, false);
-          // Update the original element with the new position
-          setSelectionState(prev => ({
-            ...prev,
-            originalElement: updatedWheel,
-            dragStartPoint: point,
-          }));
-        } else if (selectionState.dragType === 'wheel-edge') {
-          // Resize wheel
-          const newRadius = Math.sqrt(
-            (point.x - wheel.center.x) ** 2 + (point.y - wheel.center.y) ** 2
-          );
-          const updatedWheel = {
-            ...wheel,
-            radius: newRadius,
-          };
-          onUpdateWheel(updatedWheel, false);
-          // Update the original element with the new radius
-          setSelectionState(prev => ({
-            ...prev,
-            originalElement: updatedWheel,
-            dragStartPoint: point,
-          }));
-        }
-      } else if (selectionState.selectionType === 'rod' && selectionState.originalElement) {
-        const rod = selectionState.originalElement as Rod;
-        if (selectionState.dragType === 'rod-end') {
-          // Move rod endpoint
-          const isStart = isPointNearPoint(selectionState.dragStartPoint, rod.start);
-          const updatedRod = {
-            ...rod,
-            [isStart ? 'start' : 'end']: {
-              x: point.x,
-              y: point.y,
-            },
-          };
-          onUpdateRod(updatedRod, false);
-          // Update the original element with the new position
-          setSelectionState(prev => ({
-            ...prev,
-            originalElement: updatedRod,
-            dragStartPoint: point,
-          }));
-        } else if (selectionState.dragType === 'rod-middle') {
-          // Move entire rod
-          const updatedRod = {
+          });
+        } else if ('start' in originalElement) { // Rod
+          const rod = originalElement as Rod;
+          onUpdateRod({
             ...rod,
             start: {
               x: rod.start.x + dx,
@@ -404,33 +391,24 @@ export const Canvas = ({
               x: rod.end.x + dx,
               y: rod.end.y + dy,
             },
-          };
-          onUpdateRod(updatedRod, false);
-          // Update the original element with the new position
-          setSelectionState(prev => ({
-            ...prev,
-            originalElement: updatedRod,
-            dragStartPoint: point,
-          }));
+          });
+        } else if ('position' in originalElement) { // Pivot
+          const pivot = originalElement as Pivot;
+          onUpdatePivot({
+            ...pivot,
+            position: {
+              x: pivot.position.x + dx,
+              y: pivot.position.y + dy,
+            },
+          });
         }
-      } else if (selectionState.selectionType === 'pivot' && selectionState.originalElement) {
-        const pivot = selectionState.originalElement as Pivot;
-        // Move pivot
-        const updatedPivot = {
-          ...pivot,
-          position: {
-            x: pivot.position.x + dx,
-            y: pivot.position.y + dy,
-          },
-        };
-        onUpdatePivot(updatedPivot, false);
-        // Update the original element with the new position
-        setSelectionState(prev => ({
-          ...prev,
-          originalElement: updatedPivot,
-          dragStartPoint: point,
-        }));
-      }
+      });
+
+      setSelectionState(prev => ({
+        ...prev,
+        dragStartPoint: point,
+        originalElements: new Map(selectionState.originalElements),
+      }));
     }
   }, [isDrawing, startPoint, selectedTool, selectionState, onUpdateWheel, onUpdateRod, onUpdatePivot]);
 
@@ -447,23 +425,28 @@ export const Canvas = ({
       setIsDrawing(false);
       setStartPoint(null);
       setCurrentPoint(null);
-    } else if (selectedTool === 'select' && selectionState.originalElement) {
+    } else if (selectedTool === 'select' && selectionState.originalElements.size > 0) {
       // Log the final position when drag is complete
-      if (selectionState.selectionType === 'wheel') {
-        onUpdateWheel(selectionState.originalElement as Wheel, true);
-      } else if (selectionState.selectionType === 'rod') {
-        onUpdateRod(selectionState.originalElement as Rod, true);
-      } else if (selectionState.selectionType === 'pivot') {
-        onUpdatePivot(selectionState.originalElement as Pivot, true);
-      }
+      selectionState.selectedIds.forEach(id => {
+        const originalElement = selectionState.originalElements.get(id);
+        if (!originalElement) return;
+
+        if ('center' in originalElement) { // Wheel
+          onUpdateWheel(originalElement as Wheel, true);
+        } else if ('start' in originalElement) { // Rod
+          onUpdateRod(originalElement as Rod, true);
+        } else if ('position' in originalElement) { // Pivot
+          onUpdatePivot(originalElement as Pivot, true);
+        }
+      });
       
       // Clear selection state
       setSelectionState({
-        selectedId: null,
+        selectedIds: new Set(),
         selectionType: null,
         dragType: null,
         dragStartPoint: null,
-        originalElement: null,
+        originalElements: new Map(),
       });
     }
   }, [isDrawing, startPoint, selectedTool, selectionState, onAddRod, onUpdateWheel, onUpdateRod, onUpdatePivot]);
