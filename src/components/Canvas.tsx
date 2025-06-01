@@ -152,18 +152,22 @@ export const Canvas = ({
 
   const handleMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const point = getCanvasPoint(e);
+    console.log('Canvas MouseDown', { point, selectedTool });
     
     if (selectedTool === 'wheel') {
+      console.log('Placing wheel at', point);
       onAddWheel({
         id: `wheel-${Date.now()}`,
         center: point,
         radius: 30, // Default radius
       });
     } else if (selectedTool === 'rod') {
+      console.log('Start drawing rod at', point);
       setIsDrawing(true);
       setStartPoint(point);
       setCurrentPoint(point);
     } else if (selectedTool === 'pivot') {
+      console.log('Placing pivot at', point);
       onAddPivot({
         id: `pivot-${Date.now()}`,
         position: point,
@@ -173,13 +177,15 @@ export const Canvas = ({
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing || !startPoint || selectedTool !== 'rod') return;
-    setCurrentPoint(getCanvasPoint(e));
+    const point = getCanvasPoint(e);
+    console.log('Drawing rod preview to', point);
+    setCurrentPoint(point);
   }, [isDrawing, startPoint, selectedTool]);
 
   const handleMouseUp = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing || !startPoint || selectedTool !== 'rod') return;
-
     const endPoint = getCanvasPoint(e);
+    console.log('Finish drawing rod at', endPoint);
     onAddRod({
       id: `rod-${Date.now()}`,
       start: startPoint,

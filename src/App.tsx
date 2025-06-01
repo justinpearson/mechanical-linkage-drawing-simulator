@@ -11,20 +11,23 @@ function App() {
   const [pivots, setPivots] = useState<Pivot[]>([])
 
   const handleAddWheel = (wheel: Wheel) => {
+    console.log('Add Wheel', wheel);
     setWheels(prev => [...prev, wheel])
   }
 
   const handleAddRod = (rod: Rod) => {
+    console.log('Add Rod', rod);
     setRods(prev => [...prev, rod])
   }
 
   const handleAddPivot = (pivot: Pivot) => {
+    console.log('Add Pivot', pivot);
     setPivots(prev => [...prev, pivot])
   }
 
   return (
     <div className="app">
-      <Toolbar selectedTool={selectedTool} onToolSelect={setSelectedTool} />
+      <Toolbar selectedTool={selectedTool} onToolSelect={(tool) => { console.log('Select Tool', tool); setSelectedTool(tool); }} />
       <Canvas
         selectedTool={selectedTool}
         wheels={wheels}
