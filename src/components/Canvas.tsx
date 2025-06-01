@@ -26,6 +26,9 @@ interface CanvasProps {
   onAddWheel: (wheel: Wheel) => void;
   onAddRod: (rod: Rod) => void;
   onAddPivot: (pivot: Pivot) => void;
+  onUpdateWheel: (wheel: Wheel) => void;
+  onUpdateRod: (rod: Rod) => void;
+  onUpdatePivot: (pivot: Pivot) => void;
 }
 
 // Hit testing functions
@@ -101,6 +104,9 @@ export const Canvas = ({
   onAddWheel,
   onAddRod,
   onAddPivot,
+  onUpdateWheel,
+  onUpdateRod,
+  onUpdatePivot,
 }: CanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
