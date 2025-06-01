@@ -73,6 +73,18 @@ function App() {
     setHistory([]);
   }
 
+  const handleDeleteSelected = () => {
+    const message = `Delete ${selectedIds.size} selected elements`;
+    console.log(message);
+    setHistory(prev => [{ message, timestamp: new Date() }, ...prev]);
+
+    // Delete selected elements
+    setWheels(prev => prev.filter(wheel => !selectedIds.has(wheel.id)));
+    setRods(prev => prev.filter(rod => !selectedIds.has(rod.id)));
+    setPivots(prev => prev.filter(pivot => !selectedIds.has(pivot.id)));
+    setSelectedIds(new Set());
+  }
+
   const formatTimestamp = (date: Date) => {
     return date.toLocaleTimeString();
   }
@@ -118,20 +130,37 @@ function App() {
       <div style={{ width: 800, margin: '20px auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
           <h3 style={{ margin: 0 }}>Elements</h3>
-          <button 
-            onClick={handleDeleteAll}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#ff4444',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '14px'
-            }}
-          >
-            Delete All
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button 
+              onClick={handleDeleteSelected}
+              disabled={selectedIds.size === 0}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: selectedIds.size > 0 ? '#ff4444' : '#cccccc',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: selectedIds.size > 0 ? 'pointer' : 'not-allowed',
+                fontSize: '14px'
+              }}
+            >
+              Delete {selectedIds.size}
+            </button>
+            <button 
+              onClick={handleDeleteAll}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#ff4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              Delete All
+            </button>
+          </div>
         </div>
         <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.05)', marginBottom: '20px' }}>
           <thead>
