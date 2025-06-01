@@ -308,25 +308,108 @@ export const Canvas = ({
   }, [selectedTool, onAddWheel, onAddRod, onAddPivot, wheels, rods, pivots]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing || !startPoint || selectedTool !== 'rod') return;
     const point = getCanvasPoint(e);
-    console.log('Drawing rod preview to', point);
-    setCurrentPoint(point);
-  }, [isDrawing, startPoint, selectedTool]);
+    
+    if (isDrawing && startPoint && selectedTool === 'rod') {
+      console.log('Drawing rod preview to', point);
+      setCurrentPoint(point);
+      return;
+    }
+    
+    if (selectedTool === 'select' && selectionState.dragType && selectionState.dragStartPoint && selectionState.originalElement) {
+      const dx = point.x - selectionState.dragStartPoint.x;
+      const dy = point.y - selectionState.dragStartPoint.y;
+      
+      if (selectionState.selectionType === 'wheel' && selectionState.originalElement) {
+        const wheel = selectionState.originalElement as Wheel;
+        if (selectionState.dragType === 'wheel-center') {
+          // Move wheel center
+          onUpdateWheel({
+            ...wheel,
+            center: {
+              x: wheel.center.x + dx,
+              y: wheel.center.y + dy,
+            },
+          });
+        } else if (selectionState.dragType === 'wheel-edge') {
+          // Resize wheel
+          const newRadius = Math.sqrt(
+            (point.x - wheel.center.x) ** 2 + (point.y - wheel.center.y) ** 2
+          );
+          onUpdateWheel({
+            ...wheel,
+            radius: newRadius,
+          });
+        }
+      } else if (selectionState.selectionType === 'rod' && selectionState.originalElement) {
+        const rod = selectionState.originalElement as Rod;
+        if (selectionState.dragType === 'rod-end') {
+          // Move rod endpoint
+          const isStart = isPointNearPoint(selectionState.dragStartPoint, rod.start);
+          onUpdateRod({
+            ...rod,
+            [isStart ? 'start' : 'end']: {
+              x: point.x,
+              y: point.y,
+            },
+          });
+        } else if (selectionState.dragType === 'rod-middle') {
+          // Move entire rod
+          onUpdateRod({
+            ...rod,
+            start: {
+              x: rod.start.x + dx,
+              y: rod.start.y + dy,
+            },
+            end: {
+              x: rod.end.x + dx,
+              y: rod.end.y + dy,
+            },
+          });
+        }
+      } else if (selectionState.selectionType === 'pivot' && selectionState.originalElement) {
+        const pivot = selectionState.originalElement as Pivot;
+        // Move pivot
+        onUpdatePivot({
+          ...pivot,
+          position: {
+            x: pivot.position.x + dx,
+            y: pivot.position.y + dy,
+          },
+        });
+      }
+      
+      // Update drag start point
+      setSelectionState(prev => ({
+        ...prev,
+        dragStartPoint: point,
+      }));
+    }
+  }, [isDrawing, startPoint, selectedTool, selectionState, onUpdateWheel, onUpdateRod, onUpdatePivot]);
 
   const handleMouseUp = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing || !startPoint || selectedTool !== 'rod') return;
-    const endPoint = getCanvasPoint(e);
-    console.log('Finish drawing rod at', endPoint);
-    onAddRod({
-      id: `rod-${Date.now()}`,
-      start: startPoint,
-      end: endPoint,
-    });
+    if (isDrawing && startPoint && selectedTool === 'rod') {
+      const endPoint = getCanvasPoint(e);
+      console.log('Finish drawing rod at', endPoint);
+      onAddRod({
+        id: `rod-${Date.now()}`,
+        start: startPoint,
+        end: endPoint,
+      });
 
-    setIsDrawing(false);
-    setStartPoint(null);
-    setCurrentPoint(null);
+      setIsDrawing(false);
+      setStartPoint(null);
+      setCurrentPoint(null);
+    } else if (selectedTool === 'select') {
+      // Clear selection state
+      setSelectionState({
+        selectedId: null,
+        selectionType: null,
+        dragType: null,
+        dragStartPoint: null,
+        originalElement: null,
+      });
+    }
   }, [isDrawing, startPoint, selectedTool, onAddRod]);
 
   return (
