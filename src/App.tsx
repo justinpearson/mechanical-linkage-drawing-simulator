@@ -9,37 +9,94 @@ function App() {
   const [wheels, setWheels] = useState<Wheel[]>([])
   const [rods, setRods] = useState<Rod[]>([])
   const [pivots, setPivots] = useState<Pivot[]>([])
+  const [history, setHistory] = useState<{ message: string; timestamp: Date }[]>([])
 
   const handleAddWheel = (wheel: Wheel) => {
-    console.log('Add Wheel', wheel);
-    setWheels(prev => [...prev, wheel])
+    const message = `Add Wheel at (${wheel.center.x.toFixed(1)}, ${wheel.center.y.toFixed(1)})`;
+    console.log(message);
+    setHistory(prev => [{ message, timestamp: new Date() }, ...prev]);
+    setWheels(prev => [wheel, ...prev])
   }
 
   const handleAddRod = (rod: Rod) => {
-    console.log('Add Rod', rod);
-    setRods(prev => [...prev, rod])
+    const message = `Add Rod from (${rod.start.x.toFixed(1)}, ${rod.start.y.toFixed(1)}) to (${rod.end.x.toFixed(1)}, ${rod.end.y.toFixed(1)})`;
+    console.log(message);
+    setHistory(prev => [{ message, timestamp: new Date() }, ...prev]);
+    setRods(prev => [rod, ...prev])
   }
 
   const handleAddPivot = (pivot: Pivot) => {
-    console.log('Add Pivot', pivot);
-    setPivots(prev => [...prev, pivot])
+    const message = `Add Pivot at (${pivot.position.x.toFixed(1)}, ${pivot.position.y.toFixed(1)})`;
+    console.log(message);
+    setHistory(prev => [{ message, timestamp: new Date() }, ...prev]);
+    setPivots(prev => [pivot, ...prev])
+  }
+
+  const handleDeleteAll = () => {
+    const message = 'Delete all elements';
+    console.log(message);
+    setHistory(prev => [{ message, timestamp: new Date() }, ...prev]);
+    setWheels([]);
+    setRods([]);
+    setPivots([]);
+  }
+
+  const handleClearHistory = () => {
+    setHistory([]);
+  }
+
+  const formatTimestamp = (date: Date) => {
+    return date.toLocaleTimeString();
   }
 
   return (
     <div className="app">
-      <Toolbar selectedTool={selectedTool} onToolSelect={(tool) => { console.log('Select Tool', tool); setSelectedTool(tool); }} />
-      <Canvas
-        selectedTool={selectedTool}
-        wheels={wheels}
-        rods={rods}
-        pivots={pivots}
-        onAddWheel={handleAddWheel}
-        onAddRod={handleAddRod}
-        onAddPivot={handleAddPivot}
-      />
+      <header style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <h1>Mechanical Linkage Drawing Simulator</h1>
+        <p style={{ maxWidth: '800px', margin: '0 auto', lineHeight: '1.6', textAlign: 'left' }}>
+          This is a web app for generating drawings via mechanical linkage systems, like the "Spirograph" children's toy, or fancy scrollwork on currency ("intaglio").
+          <br /><br />
+          A mechanical linkage is basically a collection of rotating wheels and rods that are attached to each other in some way. In this app, the user can create wheels and rods, connect them together, and play an animation that simulates the wheels turning and the linkage arms moving around. It is basically a 2D, lightweight, heavily constrained physics simulator.
+        </p>
+      </header>
+
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+        <Toolbar selectedTool={selectedTool} onToolSelect={(tool) => { 
+          const message = `Select Tool: ${tool}`;
+          console.log(message);
+          setHistory(prev => [{ message, timestamp: new Date() }, ...prev]);
+          setSelectedTool(tool); 
+        }} />
+        <Canvas
+          selectedTool={selectedTool}
+          wheels={wheels}
+          rods={rods}
+          pivots={pivots}
+          onAddWheel={handleAddWheel}
+          onAddRod={handleAddRod}
+          onAddPivot={handleAddPivot}
+        />
+      </div>
+
       <div style={{ width: 800, margin: '20px auto' }}>
-        <h3>Elements</h3>
-        <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+          <h3 style={{ margin: 0 }}>Elements</h3>
+          <button 
+            onClick={handleDeleteAll}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#ff4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            Delete All
+          </button>
+        </div>
+        <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.05)', marginBottom: '20px' }}>
           <thead>
             <tr>
               <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left', padding: 8 }}>Type</th>
@@ -67,6 +124,40 @@ function App() {
               <tr key={pivot.id}>
                 <td style={{ padding: 8 }}>Pivot</td>
                 <td style={{ padding: 8 }}>{`(${pivot.position.x.toFixed(1)}, ${pivot.position.y.toFixed(1)})`}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+          <h3 style={{ margin: 0 }}>History</h3>
+          <button 
+            onClick={handleClearHistory}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#666',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            Clear History
+          </button>
+        </div>
+        <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: 8, boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+          <thead>
+            <tr>
+              <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left', padding: 8 }}>Time</th>
+              <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left', padding: 8 }}>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {history.map((entry, index) => (
+              <tr key={index}>
+                <td style={{ padding: 8 }}>{formatTimestamp(entry.timestamp)}</td>
+                <td style={{ padding: 8 }}>{entry.message}</td>
               </tr>
             ))}
           </tbody>

@@ -1,0 +1,23 @@
+Next task: Misc UI updates: add title, add "delete" button, add history table. See below for details:
+
+1. Move the toolbar above the canvas, instead of the left. Have the buttons laid out in a horizontal row, not in a vertical column.
+
+2. At the top of the page, add a title and description: 
+
+Title: "Mechanical Linkage Drawing Simulator"
+
+Description:
+
+"""
+This is a web app for generating drawings via mechanical linkage systems, like the "Spirograph" children's toy, or fancy scrollwork on currency ("intaglio").
+
+A mechanical linkage is basically a collection of rotating wheels and rods that are attached to each other in some way. In this app, the user can create wheels and rods, connect them together, and play an animation that simulates the wheels turning and the linkage arms moving around. It is basically a 2D, lightweight, heavily constrained physics simulator.
+"""
+
+3. For Wheels, add a "fill" color to the circle. White is fine. This will make them easier to click and drag, when we implement that functionality.
+
+4. Change Wheel's radial line color from red to black.
+
+5. Add a "Delete All" button that clears all elements from the canvas.
+
+6. Below the Elements table, add an "History" table that contains a log of the past UI actions -- anything that's being console.log'd should also be added to this "History" table. Also add a "Clear" button to clear the table. 
