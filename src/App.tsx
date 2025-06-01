@@ -10,6 +10,7 @@ function App() {
   const [rods, setRods] = useState<Rod[]>([])
   const [pivots, setPivots] = useState<Pivot[]>([])
   const [history, setHistory] = useState<{ message: string; timestamp: Date }[]>([])
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   const handleAddWheel = (wheel: Wheel) => {
     const message = `Add Wheel at (${wheel.center.x.toFixed(1)}, ${wheel.center.y.toFixed(1)})`;
@@ -105,6 +106,8 @@ function App() {
           onUpdateWheel={handleUpdateWheel}
           onUpdateRod={handleUpdateRod}
           onUpdatePivot={handleUpdatePivot}
+          selectedIds={selectedIds}
+          onSelectionChange={setSelectedIds}
         />
       </div>
 
@@ -131,6 +134,7 @@ function App() {
             <tr>
               <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left', padding: 8 }}>Type</th>
               <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left', padding: 8 }}>Position</th>
+              <th style={{ borderBottom: '1px solid #ccc', textAlign: 'center', padding: 8 }}>Selected</th>
             </tr>
           </thead>
           <tbody>
@@ -138,6 +142,21 @@ function App() {
               <tr key={wheel.id}>
                 <td style={{ padding: 8 }}>Wheel</td>
                 <td style={{ padding: 8 }}>{`(${wheel.center.x.toFixed(1)}, ${wheel.center.y.toFixed(1)})`}</td>
+                <td style={{ padding: 8, textAlign: 'center' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(wheel.id)}
+                    onChange={() => {
+                      const newSelectedIds = new Set(selectedIds);
+                      if (newSelectedIds.has(wheel.id)) {
+                        newSelectedIds.delete(wheel.id);
+                      } else {
+                        newSelectedIds.add(wheel.id);
+                      }
+                      setSelectedIds(newSelectedIds);
+                    }}
+                  />
+                </td>
               </tr>
             ))}
             {rods.map(rod => {
@@ -147,6 +166,21 @@ function App() {
                 <tr key={rod.id}>
                   <td style={{ padding: 8 }}>Rod</td>
                   <td style={{ padding: 8 }}>{`(${midX.toFixed(1)}, ${midY.toFixed(1)})`}</td>
+                  <td style={{ padding: 8, textAlign: 'center' }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(rod.id)}
+                      onChange={() => {
+                        const newSelectedIds = new Set(selectedIds);
+                        if (newSelectedIds.has(rod.id)) {
+                          newSelectedIds.delete(rod.id);
+                        } else {
+                          newSelectedIds.add(rod.id);
+                        }
+                        setSelectedIds(newSelectedIds);
+                      }}
+                    />
+                  </td>
                 </tr>
               );
             })}
@@ -154,6 +188,21 @@ function App() {
               <tr key={pivot.id}>
                 <td style={{ padding: 8 }}>Pivot</td>
                 <td style={{ padding: 8 }}>{`(${pivot.position.x.toFixed(1)}, ${pivot.position.y.toFixed(1)})`}</td>
+                <td style={{ padding: 8, textAlign: 'center' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(pivot.id)}
+                    onChange={() => {
+                      const newSelectedIds = new Set(selectedIds);
+                      if (newSelectedIds.has(pivot.id)) {
+                        newSelectedIds.delete(pivot.id);
+                      } else {
+                        newSelectedIds.add(pivot.id);
+                      }
+                      setSelectedIds(newSelectedIds);
+                    }}
+                  />
+                </td>
               </tr>
             ))}
           </tbody>

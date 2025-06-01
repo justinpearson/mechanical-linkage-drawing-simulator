@@ -29,6 +29,8 @@ interface CanvasProps {
   onUpdateWheel: (wheel: Wheel, isDragComplete?: boolean) => void;
   onUpdateRod: (rod: Rod, isDragComplete?: boolean) => void;
   onUpdatePivot: (pivot: Pivot, isDragComplete?: boolean) => void;
+  selectedIds: Set<string>;
+  onSelectionChange: (selectedIds: Set<string>) => void;
 }
 
 // Hit testing functions
@@ -107,6 +109,8 @@ export const Canvas = ({
   onUpdateWheel,
   onUpdateRod,
   onUpdatePivot,
+  selectedIds,
+  onSelectionChange,
 }: CanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -161,9 +165,9 @@ export const Canvas = ({
     wheels.forEach(wheel => {
       ctx.beginPath();
       ctx.arc(wheel.center.x, wheel.center.y, wheel.radius, 0, Math.PI * 2);
-      ctx.fillStyle = selectionState.selectedIds.has(wheel.id) ? '#e6f3ff' : 'white';
+      ctx.fillStyle = selectedIds.has(wheel.id) ? '#e6f3ff' : 'white';
       ctx.fill();
-      ctx.strokeStyle = selectionState.selectedIds.has(wheel.id) ? '#0066cc' : 'black';
+      ctx.strokeStyle = selectedIds.has(wheel.id) ? '#0066cc' : 'black';
       ctx.stroke();
 
       // Draw radial line to show orientation
@@ -181,7 +185,7 @@ export const Canvas = ({
       ctx.beginPath();
       ctx.moveTo(rod.start.x, rod.start.y);
       ctx.lineTo(rod.end.x, rod.end.y);
-      ctx.strokeStyle = selectionState.selectedIds.has(rod.id) ? '#0066cc' : 'black';
+      ctx.strokeStyle = selectedIds.has(rod.id) ? '#0066cc' : 'black';
       ctx.stroke();
 
       // Draw circular endpoints
@@ -198,7 +202,7 @@ export const Canvas = ({
     pivots.forEach(pivot => {
       ctx.beginPath();
       ctx.arc(pivot.position.x, pivot.position.y, 6, 0, Math.PI * 2);
-      ctx.fillStyle = selectionState.selectedIds.has(pivot.id) ? '#0066cc' : 'black';
+      ctx.fillStyle = selectedIds.has(pivot.id) ? '#0066cc' : 'black';
       ctx.fill();
       // Add a white border to make it more visible
       ctx.strokeStyle = 'white';
@@ -219,7 +223,7 @@ export const Canvas = ({
       ctx.stroke();
       ctx.setLineDash([]);
     }
-  }, [wheels, rods, pivots, isDrawing, startPoint, currentPoint, selectionState.selectedIds]);
+  }, [wheels, rods, pivots, isDrawing, startPoint, currentPoint, selectedIds]);
 
   // Set canvas size
   useEffect(() => {
@@ -288,7 +292,7 @@ export const Canvas = ({
       }
 
       if (hitElement) {
-        const newSelectedIds = new Set(selectionState.selectedIds);
+        const newSelectedIds = new Set(selectedIds);
         
         if (e.shiftKey) {
           // Toggle selection with shift key
@@ -314,6 +318,7 @@ export const Canvas = ({
           if (pivot) originalElements.set(id, pivot);
         });
 
+        onSelectionChange(newSelectedIds);
         setSelectionState({
           selectedIds: newSelectedIds,
           selectionType: hitElement.type,
@@ -323,6 +328,7 @@ export const Canvas = ({
         });
       } else if (!e.shiftKey) {
         // Clear selection if clicking empty space without shift
+        onSelectionChange(new Set());
         setSelectionState({
           selectedIds: new Set(),
           selectionType: null,
@@ -350,7 +356,7 @@ export const Canvas = ({
         position: point,
       });
     }
-  }, [selectedTool, onAddWheel, onAddRod, onAddPivot, wheels, rods, pivots, selectionState.selectedIds]);
+  }, [selectedTool, onAddWheel, onAddRod, onAddPivot, wheels, rods, pivots, selectedIds, onSelectionChange]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const point = getCanvasPoint(e);
