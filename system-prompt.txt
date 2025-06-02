@@ -9,10 +9,10 @@ Thank you!
 
 I am about to give you a coding task that you should implement. HOWEVER, as mentioned in CONTRIBUTING.md, before you implement it, please first copy my prompt into a file in the `prompts/` directory. This is for auditing purposes. The filename should have the form `YYYY-MM-DD-HH-MM-SS_BRANCH_NAME.txt`, where `BRANCH_NAME` is the name of the git branch you'll create for this task / feature. (You may need to run `date` in a terminal to determine the current date & time.) Add this prompt file in your first commit on this new branch.
 
-For example, if the coding task is "Please add multi-select functionality to the app, with behavior as follows ...", then you should create the text file `prompts/2025-05-31-15-43-11_addMultiSelect.txt` with the content "Please add multi-select functionality to the app, with behavior as follows ...", copied EXACTLY. Then create and checkout the git branch `addMultiSelect`. Then add and commit the file `prompts/2025-05-31-15-43-11_addMultiSelect.txt` to that git branch. THEN you can proceed to implement your coding solution.
+For example, if the coding task is "Please add multi-select functionality to the app, with behavior as follows ...", then you should create the text file `prompts/2025-05-31-15-43-11_addMultiSelect.txt` with the content "Please add multi-select functionality to the app, with behavior as follows ...", copied EXACTLY. Then create and checkout the git branch `addMultiSelect`. Then add and commit the file `prompts/2025-05-31-15-43-11_addMultiSelect.txt` to that git branch, with the commit message "FEATURE PROMPT: <XXX>" where `XXX` is a short one-line summary. THEN you can proceed to implement your coding solution.
 
-In your implementation, use small atomic commits. If I give you a list of changes to make, each should be in its own commit.
+In your implementation, use small atomic commits. If I give you a list of changes to make, each should be in its own commit. To avoid newline formatting errors, write your comment message to a file "commit-message.txt" and commit via `git commit -F commit-message.txt`.
 
-Lastly: After implementation, when it's time to make a Pull Request, use the `gh` command (github CLI) to create the PR. To avoid newline formatting issues, write the PR description to a file and use the `--body-file` option.
+Lastly: After implementation, when it's time to make a Pull Request, use the `gh` command (github CLI) to create the PR. To avoid newline formatting issues, write the PR description to a file "pr-body.txt" and use the `--body-file` option.
 
 Does this make sense? If so, I will proceed to give you a coding task, which you will then copy verbatim into a file as described above.
