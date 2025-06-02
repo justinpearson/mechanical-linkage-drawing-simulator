@@ -52,3 +52,9 @@ yarn-error.log*
 
 # Yarn Integrity file
 .yarn-integrity 
+
+# Commit message
+commit-message.txt
+
+# PR body
+pr-body.txt

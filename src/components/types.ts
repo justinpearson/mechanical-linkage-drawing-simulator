@@ -35,9 +35,15 @@ export type SelectionType = 'wheel' | 'rod' | 'pivot' | null;
 export type DragType = 'wheel-center' | 'wheel-edge' | 'rod-end' | 'rod-middle' | 'pivot' | null;
 
 export interface SelectionState {
-  selectedId: string | null;
+  selectedIds: Set<string>;
   selectionType: SelectionType;
   dragType: DragType;
   dragStartPoint: Point | null;
-  originalElement: Wheel | Rod | Pivot | null;
+  originalElements: Map<string, Wheel | Rod | Pivot>;
+}
+
+export interface SelectedElements {
+  wheels: Set<string>;
+  rods: Set<string>;
+  pivots: Set<string>;
 } 

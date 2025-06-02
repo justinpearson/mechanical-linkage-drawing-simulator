@@ -33,11 +33,12 @@ const ToolButton = styled.button<{ isSelected: boolean }>`
 interface ToolbarProps {
   selectedTool: Tool;
   onToolSelect: (tool: Tool) => void;
+  selectedCount: number;
 }
 
-export const Toolbar = ({ selectedTool, onToolSelect }: ToolbarProps) => {
+export const Toolbar = ({ selectedTool, onToolSelect, selectedCount }: ToolbarProps) => {
   const tools: { id: Tool; label: string }[] = [
-    { id: 'select', label: 'Select' },
+    { id: 'select', label: selectedTool === 'select' ? `Select (${selectedCount})` : 'Select' },
     { id: 'wheel', label: 'Wheel' },
     { id: 'rod', label: 'Rod' },
     { id: 'pivot', label: 'Pivot' },

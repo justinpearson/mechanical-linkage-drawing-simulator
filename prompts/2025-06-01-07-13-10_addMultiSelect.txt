@@ -1,0 +1,11 @@
+New feature: multi-select
+
+As a reminder, each of the following new features should be in its own git commit, or multiple commits if a single commit is too large or complex. Write detailed and human-readable commit messages; they can be multi-line commit messages if needed.
+
+1. Multi-select: When using the Select tool, shift-clicking will select multiple elements -- shift-clicking an element toggles whether or not it's selected. Selected elements are colored blue to visually distinguish them. Dragging to move any selected element moves the whole group of selected elements. Note: Resizing is disabled when multiple items are selected, ie, can't resize a Wheel or move a Rod's endpoints when multi-selecting. For Pivot elements, if a Pivot's elements are all in a multi-select, the Pivot is automatically added to the multi-select too.
+
+2. In the "Elements" table, add a "Selected" column that uses checkboxes to show which elements are selected.
+
+3. The text of the Select button reflects how many items are selected: If Select tool is not the currently-selected tool, its text is "Select". Else, if Select tool is active, its text is "Select (X)" where X is the number of selected items (including 0).
+
+4. Add a "Delete" button that deletes the selected elements. The text of the Delete button reflects how many items will be deleted when the button is pressed, eg, "Delete 3" if 3 items are selected. 
